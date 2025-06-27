@@ -5,7 +5,7 @@
 This app helps small-scale restaurants track and manage their greenhouse gas (GHG) emissions for a 1-year period, in line with ISO 14064 standards. It is designed for virtual audits and supports certification for sustainability efforts.
 
 # Live App
-Access the deployed app here: [https://carbon-footprint-restaurants.streamlit.app/](https://carbon-footprint-restaurants.streamlit.app/)
+Access the deployed app here: [https://carbon-kitchen.streamlit.app/](https://carbon-kitchen.streamlit.app/)
 
 ## Features
 - **Easy Data Entry:** Multiple convenient ways to input your restaurant's data
