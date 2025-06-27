@@ -10,8 +10,13 @@ import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw, ImageFont
 import base64
 from functions import *
+import datetime
 
 st.set_page_config(layout="wide", page_title="Restaurant GHG Emissions Dashboard", page_icon="./media/favicon.ico")
+
+# --- Show Current Date ---
+today = datetime.date.today()
+st.markdown(f"**Today is:** {today.strftime('%B %d, %Y')}")
 
 # --- Brief Introduction ---
 st.markdown("""
