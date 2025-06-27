@@ -601,145 +601,154 @@ else:
     customer_visits = customer_visits_manual
     takeaway_containers = takeaway_containers_manual
 
-# Calculate emissions
-# Scope 1
-scope1 = (
-    lpg_used * EMISSION_FACTORS['lpg_kg'] +
-    generator_fuel * EMISSION_FACTORS['diesel_l'] +
-    refrigerant_leak * EMISSION_FACTORS['refrigerant_kg'] +
-    owned_vehicle_fuel * EMISSION_FACTORS['petrol_l']
-)
-# Scope 2
-scope2 = (
-    electricity * EMISSION_FACTORS['electricity_kwh'] +
-    chilled_water * EMISSION_FACTORS['electricity_kwh']
-)
-# Scope 3
-scope3 = (
-    rice_kg * EMISSION_FACTORS['rice_kg'] +
-    lentils_kg * EMISSION_FACTORS['lentils_kg'] +
-    vegetables_kg * EMISSION_FACTORS['vegetables_kg'] +
-    milk_liters * EMISSION_FACTORS['milk_l'] +
-    ghee_kg * EMISSION_FACTORS['ghee_kg'] +
-    spices_kg * EMISSION_FACTORS['spices_kg'] +
-    oil_liters * EMISSION_FACTORS['oil_l'] +
-    upstream_transport_km * EMISSION_FACTORS['km_transport'] +
-    food_waste_kg * EMISSION_FACTORS['food_waste_kg'] +
-    packaging_waste_kg * EMISSION_FACTORS['packaging_kg'] +
-    staff_count * avg_commute_km * 365 * EMISSION_FACTORS['commute_km'] +
-    business_travel_km * EMISSION_FACTORS['business_travel_km'] +
-    third_party_deliveries * EMISSION_FACTORS['delivery_order'] +
-    customer_visits * EMISSION_FACTORS['customer_visit'] +
-    takeaway_containers * EMISSION_FACTORS['takeaway_container']
-)
-# Convert to tonnes
-scope1_t = scope1 / 1000
-scope2_t = scope2 / 1000
-scope3_t = scope3 / 1000
-total_t = scope1_t + scope2_t + scope3_t
-
-# Display results
-st.markdown(f"""
----
-## 🧮 Total GHG Emissions: **{total_t:.2f} tCO₂e/year**
-- 🔥 Scope 1: {scope1_t:.2f} tCO₂e
-- 💡 Scope 2: {scope2_t:.2f} tCO₂e
-- 🛵 Scope 3: {scope3_t:.2f} tCO₂e
----
-""")
-
-# Data export section
-st.markdown("### 📤 Export Your Data")
-
-# Create data for export
-export_data = {
-    'Restaurant Data': {
-        'LPG used (kg/year)': lpg_used,
-        'Generator fuel (liters/year)': generator_fuel,
-        'Refrigerant leakage (kg/year)': refrigerant_leak,
-        'Owned vehicle fuel (liters/year)': owned_vehicle_fuel,
-        'Electricity (kWh/year)': electricity,
-        'Chilled water (kWh/year)': chilled_water,
-        'Rice purchased (kg/year)': rice_kg,
-        'Lentils purchased (kg/year)': lentils_kg,
-        'Vegetables purchased (kg/year)': vegetables_kg,
-        'Milk purchased (liters/year)': milk_liters,
-        'Ghee purchased (kg/year)': ghee_kg,
-        'Spices purchased (kg/year)': spices_kg,
-        'Cooking oil purchased (liters/year)': oil_liters,
-        'Upstream transport (km/year)': upstream_transport_km,
-        'Food waste generated (kg/year)': food_waste_kg,
-        'Packaging waste generated (kg/year)': packaging_waste_kg,
-        'Number of staff': staff_count,
-        'Average staff commute (km)': avg_commute_km,
-        'Business travel (km/year)': business_travel_km,
-        'Third-party deliveries (orders/year)': third_party_deliveries,
-        'Customer visits (visits/year)': customer_visits,
-        'Takeaway containers (containers/year)': takeaway_containers
-    },
-    'Emissions Results': {
-        'Scope 1 Emissions (tCO2e/year)': scope1_t,
-        'Scope 2 Emissions (tCO2e/year)': scope2_t,
-        'Scope 3 Emissions (tCO2e/year)': scope3_t,
-        'Total Emissions (tCO2e/year)': total_t
-    }
-}
-
-col1, col2 = st.columns(2)
-
-with col1:
-    # Export as CSV
-    export_df = pd.DataFrame(list(export_data['Restaurant Data'].items()), 
-                            columns=['Parameter', 'Value'])
-    csv_export = export_df.to_csv(index=False)
-    st.download_button(
-        label="📄 Export Data as CSV",
-        data=csv_export,
-        file_name=f"restaurant_emissions_data_{datetime.date.today().strftime('%Y%m%d')}.csv",
-        mime="text/csv"
+# Only calculate and display if we're running in Streamlit
+if st._is_running_with_streamlit:
+    # Calculate emissions
+    # Scope 1
+    scope1 = (
+        lpg_used * EMISSION_FACTORS['lpg_kg'] +
+        generator_fuel * EMISSION_FACTORS['diesel_l'] +
+        refrigerant_leak * EMISSION_FACTORS['refrigerant_kg'] +
+        owned_vehicle_fuel * EMISSION_FACTORS['petrol_l']
     )
+    # Scope 2
+    scope2 = (
+        electricity * EMISSION_FACTORS['electricity_kwh'] +
+        chilled_water * EMISSION_FACTORS['electricity_kwh']
+    )
+    # Scope 3
+    scope3 = (
+        rice_kg * EMISSION_FACTORS['rice_kg'] +
+        lentils_kg * EMISSION_FACTORS['lentils_kg'] +
+        vegetables_kg * EMISSION_FACTORS['vegetables_kg'] +
+        milk_liters * EMISSION_FACTORS['milk_l'] +
+        ghee_kg * EMISSION_FACTORS['ghee_kg'] +
+        spices_kg * EMISSION_FACTORS['spices_kg'] +
+        oil_liters * EMISSION_FACTORS['oil_l'] +
+        upstream_transport_km * EMISSION_FACTORS['km_transport'] +
+        food_waste_kg * EMISSION_FACTORS['food_waste_kg'] +
+        packaging_waste_kg * EMISSION_FACTORS['packaging_kg'] +
+        staff_count * avg_commute_km * 365 * EMISSION_FACTORS['commute_km'] +
+        business_travel_km * EMISSION_FACTORS['business_travel_km'] +
+        third_party_deliveries * EMISSION_FACTORS['delivery_order'] +
+        customer_visits * EMISSION_FACTORS['customer_visit'] +
+        takeaway_containers * EMISSION_FACTORS['takeaway_container']
+    )
+    # Convert to tonnes
+    scope1_t = scope1 / 1000
+    scope2_t = scope2 / 1000
+    scope3_t = scope3 / 1000
+    total_t = scope1_t + scope2_t + scope3_t
 
-with col2:
-    # Export as Excel with multiple sheets
-    buffer = io.BytesIO()
-    with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-        # Restaurant data sheet
-        pd.DataFrame(list(export_data['Restaurant Data'].items()), 
-                    columns=['Parameter', 'Value']).to_excel(writer, sheet_name='Restaurant Data', index=False)
-        
-        # Emissions results sheet
-        pd.DataFrame(list(export_data['Emissions Results'].items()), 
-                    columns=['Parameter', 'Value']).to_excel(writer, sheet_name='Emissions Results', index=False)
-        
-        # Summary sheet
-        summary_data = {
-            'Summary': [
-                f"Total GHG Emissions: {total_t:.2f} tCO₂e/year",
-                f"Scope 1 (Direct): {scope1_t:.2f} tCO₂e ({scope1_t/total_t*100:.1f}%)",
-                f"Scope 2 (Energy): {scope2_t:.2f} tCO₂e ({scope2_t/total_t*100:.1f}%)",
-                f"Scope 3 (Value Chain): {scope3_t:.2f} tCO₂e ({scope3_t/total_t*100:.1f}%)",
-                f"Date: {datetime.date.today().strftime('%B %d, %Y')}",
-                f"Restaurant Type: {'Custom Data' if data_source else 'Manual Entry'}"
-            ]
+    # Display results
+    st.markdown(f"""
+    ---
+    ## 🧮 Total GHG Emissions: **{total_t:.2f} tCO₂e/year**
+    - 🔥 Scope 1: {scope1_t:.2f} tCO₂e
+    - 💡 Scope 2: {scope2_t:.2f} tCO₂e
+    - 🛵 Scope 3: {scope3_t:.2f} tCO₂e
+    ---
+    """)
+
+    # Data export section
+    st.markdown("### 📤 Export Your Data")
+
+    # Create data for export
+    export_data = {
+        'Restaurant Data': {
+            'LPG used (kg/year)': lpg_used,
+            'Generator fuel (liters/year)': generator_fuel,
+            'Refrigerant leakage (kg/year)': refrigerant_leak,
+            'Owned vehicle fuel (liters/year)': owned_vehicle_fuel,
+            'Electricity (kWh/year)': electricity,
+            'Chilled water (kWh/year)': chilled_water,
+            'Rice purchased (kg/year)': rice_kg,
+            'Lentils purchased (kg/year)': lentils_kg,
+            'Vegetables purchased (kg/year)': vegetables_kg,
+            'Milk purchased (liters/year)': milk_liters,
+            'Ghee purchased (kg/year)': ghee_kg,
+            'Spices purchased (kg/year)': spices_kg,
+            'Cooking oil purchased (liters/year)': oil_liters,
+            'Upstream transport (km/year)': upstream_transport_km,
+            'Food waste generated (kg/year)': food_waste_kg,
+            'Packaging waste generated (kg/year)': packaging_waste_kg,
+            'Number of staff': staff_count,
+            'Average staff commute (km)': avg_commute_km,
+            'Business travel (km/year)': business_travel_km,
+            'Third-party deliveries (orders/year)': third_party_deliveries,
+            'Customer visits (visits/year)': customer_visits,
+            'Takeaway containers (containers/year)': takeaway_containers
+        },
+        'Emissions Results': {
+            'Scope 1 Emissions (tCO2e/year)': scope1_t,
+            'Scope 2 Emissions (tCO2e/year)': scope2_t,
+            'Scope 3 Emissions (tCO2e/year)': scope3_t,
+            'Total Emissions (tCO2e/year)': total_t
         }
-        pd.DataFrame(summary_data).to_excel(writer, sheet_name='Summary', index=False)
-    
-    buffer.seek(0)
-    st.download_button(
-        label="📊 Export as Excel Report",
-        data=buffer,
-        file_name=f"restaurant_emissions_report_{datetime.date.today().strftime('%Y%m%d')}.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+    }
 
-# Clear data option
-if st.button("🗑️ Clear All Data"):
-    # Clear session state
-    for key in ['uploaded_data', 'quick_data', 'sample_data']:
-        if key in st.session_state:
-            del st.session_state[key]
-    st.success("Data cleared! Refresh the page to start over.")
-    st.rerun()
+    col1, col2 = st.columns(2)
+
+    with col1:
+        # Export as CSV
+        export_df = pd.DataFrame(list(export_data['Restaurant Data'].items()), 
+                                columns=['Parameter', 'Value'])
+        csv_export = export_df.to_csv(index=False)
+        st.download_button(
+            label="📄 Export Data as CSV",
+            data=csv_export,
+            file_name=f"restaurant_emissions_data_{datetime.date.today().strftime('%Y%m%d')}.csv",
+            mime="text/csv"
+        )
+
+    with col2:
+        # Export as Excel with multiple sheets
+        buffer = io.BytesIO()
+        with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+            # Restaurant data sheet
+            pd.DataFrame(list(export_data['Restaurant Data'].items()), 
+                        columns=['Parameter', 'Value']).to_excel(writer, sheet_name='Restaurant Data', index=False)
+            
+            # Emissions results sheet
+            pd.DataFrame(list(export_data['Emissions Results'].items()), 
+                        columns=['Parameter', 'Value']).to_excel(writer, sheet_name='Emissions Results', index=False)
+            
+            # Summary sheet
+            if total_t > 0:
+                scope1_pct = scope1_t / total_t * 100
+                scope2_pct = scope2_t / total_t * 100
+                scope3_pct = scope3_t / total_t * 100
+            else:
+                scope1_pct = scope2_pct = scope3_pct = 0
+
+            summary_data = {
+                'Summary': [
+                    f"Total GHG Emissions: {total_t:.2f} tCO₂e/year",
+                    f"Scope 1 (Direct): {scope1_t:.2f} tCO₂e ({scope1_pct:.1f}%)",
+                    f"Scope 2 (Energy): {scope2_t:.2f} tCO₂e ({scope2_pct:.1f}%)",
+                    f"Scope 3 (Value Chain): {scope3_t:.2f} tCO₂e ({scope3_pct:.1f}%)",
+                    f"Date: {datetime.date.today().strftime('%B %d, %Y')}",
+                    f"Restaurant Type: {'Custom Data' if data_source else 'Manual Entry'}"
+                ]
+            }
+            pd.DataFrame(summary_data).to_excel(writer, sheet_name='Summary', index=False)
+        
+        buffer.seek(0)
+        st.download_button(
+            label="📊 Export as Excel Report",
+            data=buffer,
+            file_name=f"restaurant_emissions_report_{datetime.date.today().strftime('%Y%m%d')}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+
+    # Clear data option
+    if st.button("🗑️ Clear All Data"):
+        # Clear session state
+        for key in ['uploaded_data', 'quick_data', 'sample_data']:
+            if key in st.session_state:
+                del st.session_state[key]
+        st.success("Data cleared! Refresh the page to start over.")
+        st.rerun()
 
 # --- Colorful Footer ---
 st.markdown("""
