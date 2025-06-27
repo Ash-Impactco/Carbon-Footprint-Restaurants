@@ -1,6 +1,11 @@
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://carbon-footprint-restaurants.streamlit.app/)
+
 # Restaurant GHG Emissions Dashboard
 
 This app helps small-scale restaurants track and manage their greenhouse gas (GHG) emissions for a 1-year period, in line with ISO 14064 standards. It is designed for virtual audits and supports certification for sustainability efforts.
+
+# Live App
+Access the deployed app here: [https://carbon-footprint-restaurants.streamlit.app/](https://carbon-footprint-restaurants.streamlit.app/)
 
 ## Features
 - **Scope 1:** Direct emissions (LPG/natural gas for cooking, generator fuel, refrigerant leakage, company-owned vehicles)
