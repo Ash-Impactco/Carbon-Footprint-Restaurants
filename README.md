@@ -8,6 +8,7 @@ This app helps small-scale restaurants track and manage their greenhouse gas (GH
 Access the deployed app here: [https://carbon-footprint-restaurants.streamlit.app/](https://carbon-footprint-restaurants.streamlit.app/)
 
 ## Features
+- **Fun & Beautiful UI:** Colorful banner, icons, random fun facts, celebratory animations, and a vibrant footer.
 - **Scope 1:** Direct emissions (LPG/natural gas for cooking, generator fuel, refrigerant leakage, company-owned vehicles)
 - **Scope 2:** Indirect emissions from purchased electricity and energy
 - **Scope 3:** Other indirect emissions (ingredients, waste, staff commuting, third-party deliveries, packaging, etc.)
