@@ -11,161 +11,138 @@ from PIL import Image, ImageDraw, ImageFont
 import base64
 from functions import *
 
-st.set_page_config(layout="wide",page_title="Carbon Footprint Calculator", page_icon="./media/favicon.ico")
+st.set_page_config(layout="wide", page_title="Restaurant GHG Emissions Dashboard", page_icon="./media/favicon.ico")
 
-def get_base64(bin_file):
-    with open(bin_file, 'rb') as f:
-        data = f.read()
-    return base64.b64encode(data).decode()
+# --- Brief Introduction ---
+st.markdown("""
+# Restaurant GHG Emissions Data Entry
 
-background = get_base64("./media/background_min.jpg")
-icon2 = get_base64("./media/icon2.png")
-icon3 = get_base64("./media/icon3.png")
+Welcome! This dashboard helps small-scale restaurants track their greenhouse gas (GHG) emissions for ISO 14064 audits and sustainability. Please enter your data for the past year. Each section below covers a different type of emission (Scope 1, 2, 3). If you need certification, please contact us after completing your data entry.
+""")
 
-with open("./style/style.css", "r") as style:
-    css=f"""<style>{style.read().format(background=background, icon2=icon2, icon3=icon3)}</style>"""
-    st.markdown(css, unsafe_allow_html=True)
+# --- Tabs for Scopes and New Features ---
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "Scope 1: Direct Emissions",
+    "Scope 2: Indirect Emissions from Energy",
+    "Scope 3: Other Indirect Emissions",
+    "Carbon Offset Projects",
+    "Certification & Audit Contact"
+])
 
-def script():
-    with open("./style/scripts.js", "r", encoding="utf-8") as scripts:
-        open_script = f"""<script>{scripts.read()}</script> """
-        html(open_script, width=0, height=0)
+# --- Scope 1 ---
+with tab1:
+    st.markdown("""
+**Direct emissions from sources owned or controlled by the restaurant.**
+- *LPG/Natural Gas combustion*: Used for cooking dosa, idli, vada, sambar, etc.
+- *Diesel or petrol used in generators*: For backup power in case of electricity cuts.
+- *Refrigerant leakage*: From refrigerators, cold storage, and air conditioners.
+- *Company-owned delivery vehicles*: Two-wheelers or vans owned by the restaurant for food delivery.
+""")
+    lpg_used = st.number_input("LPG/Natural Gas used for cooking (kg/year)", min_value=0.0, help="Total LPG or natural gas used for all cooking in a year.")
+    generator_fuel = st.number_input("Diesel/Petrol used in generators (liters/year)", min_value=0.0, help="Total diesel or petrol used for backup generators in a year.")
+    refrigerant_leak = st.number_input("Refrigerant leakage (kg/year)", min_value=0.0, help="Estimated refrigerant lost from fridges, cold storage, ACs in a year.")
+    owned_vehicle_fuel = st.number_input("Fuel used by company-owned delivery vehicles (liters/year)", min_value=0.0, help="Total petrol/diesel used by restaurant-owned delivery vehicles in a year.")
 
+# --- Scope 2 ---
+with tab2:
+    st.markdown("""
+**Indirect emissions from the generation of purchased energy.**
+- *Purchased electricity from the grid*: Used for lighting, fans, rice cookers, mixers/grinders, refrigerators, billing systems.
+- *Purchased chilled water or steam*: If the restaurant uses central cooling or solar-heated steam systems (rare).
+""")
+    electricity = st.number_input("Purchased electricity (kWh/year)", min_value=0.0, help="Total electricity used from the grid in a year.")
+    chilled_water = st.number_input("Purchased chilled water or steam (kWh or equivalent/year)", min_value=0.0, help="If applicable. Leave as 0 if not used.")
 
-left, middle, right = st.columns([2,3.5,2])
-main, comps , result = middle.tabs([" ", " ", " "])
+# --- Scope 3 ---
+with tab3:
+    st.markdown("""
+**Other indirect emissions from the value chain (upstream and downstream).**
+##### Upstream (before the restaurant):
+- *Purchased goods and ingredients*: Emissions from growing and transporting rice, lentils, vegetables, milk, ghee, spices, oil.
+- *Capital goods*: Emissions from manufacturing kitchen equipment, gas stoves, furniture.
+- *Fuel and energy-related activities*: Emissions from fuel extraction, refining, and transport.
+- *Upstream transportation*: Transport of ingredients and goods from suppliers to the restaurant.
+- *Waste generated in operations*: Food waste, packaging waste, wastewater disposal.
+- *Employee commuting*: Staff traveling to and from the restaurant.
+- *Business travel*: Travel to vendor meetings, conferences, training, etc.
+- *Upstream leased assets*: If the restaurant rents the space, emissions from the building's operation.
+##### Downstream (after the restaurant):
+- *Delivery services by third parties*: Swiggy/Zomato delivery bikes/scooters.
+- *Customer transportation*: Emissions from customers driving/riding to the restaurant.
+- *End-of-life treatment of sold products*: Disposal of takeaway containers, plastic bags, cutlery.
+- *Franchisee emissions*: If the restaurant operates under a brand or franchise model.
+- *Downstream leased assets*: Use of spaces or kitchens managed by others.
+""")
+    st.markdown("**Enter only the fields relevant to your restaurant. Leave others as 0 or blank.**")
+    rice_kg = st.number_input("Rice purchased (kg/year)", min_value=0.0, help="Total rice purchased in a year.")
+    lentils_kg = st.number_input("Lentils purchased (kg/year)", min_value=0.0)
+    vegetables_kg = st.number_input("Vegetables purchased (kg/year)", min_value=0.0)
+    milk_liters = st.number_input("Milk purchased (liters/year)", min_value=0.0)
+    ghee_kg = st.number_input("Ghee purchased (kg/year)", min_value=0.0)
+    spices_kg = st.number_input("Spices purchased (kg/year)", min_value=0.0)
+    oil_liters = st.number_input("Cooking oil purchased (liters/year)", min_value=0.0)
+    capital_goods = st.text_input("Major capital goods purchased this year (describe, optional)")
+    upstream_transport_km = st.number_input("Upstream transport (total km/year)", min_value=0.0, help="Estimated total km for ingredient delivery to your restaurant.")
+    food_waste_kg = st.number_input("Food waste generated (kg/year)", min_value=0.0)
+    packaging_waste_kg = st.number_input("Packaging waste generated (kg/year)", min_value=0.0)
+    staff_count = st.number_input("Number of staff", min_value=0, step=1)
+    avg_commute_km = st.number_input("Average staff commute distance (km, one way)", min_value=0.0)
+    business_travel_km = st.number_input("Business travel (km/year)", min_value=0.0)
+    third_party_deliveries = st.number_input("Number of third-party delivery orders/year", min_value=0, step=1)
+    main_delivery_partner = st.text_input("Main delivery partner (e.g., Swiggy, Zomato, etc.)")
+    customer_visits = st.number_input("Estimated customer visits/year", min_value=0, step=1)
+    takeaway_containers = st.number_input("Takeaway containers used/year", min_value=0, step=1)
+    franchisee = st.checkbox("Is your restaurant part of a franchise or brand?")
+    leased_space = st.checkbox("Do you operate in a leased space or kitchen?")
 
-with open("./style/main.md", "r", encoding="utf-8") as main_page:
-    main.markdown(f"""{main_page.read()}""")
+# --- Carbon Offset Projects ---
+with tab4:
+    st.markdown("""
+## Carbon Offset Projects
+Support these projects to offset your restaurant's carbon emissions and contribute to sustainability:
+""")
+    projects = [
+        {
+            "name": "Reforestation Initiative",
+            "desc": "Plant trees to absorb CO2 and restore local ecosystems.",
+            "link": "https://www.trees.org/"
+        },
+        {
+            "name": "Renewable Energy Fund",
+            "desc": "Support solar and wind projects that replace fossil fuels.",
+            "link": "https://www.goldstandard.org/"
+        },
+        {
+            "name": "Clean Cooking Solutions",
+            "desc": "Provide clean cookstoves to reduce emissions in communities.",
+            "link": "https://www.cleancookingalliance.org/"
+        }
+    ]
+    for p in projects:
+        st.markdown(f"**{p['name']}**  ")
+        st.markdown(f"{p['desc']}  ")
+        st.markdown(f"[Learn more & support]({p['link']})  ")
+        st.markdown("---")
+    st.markdown("### Express Interest or Pledge Support")
+    name = st.text_input("Your Name", key="offset_name")
+    email = st.text_input("Your Email", key="offset_email")
+    project_choice = st.selectbox("Which project are you interested in?", [p['name'] for p in projects], key="offset_project")
+    pledge = st.text_area("How would you like to support or collaborate?")
+    if st.button("Submit Interest/Pledge", key="offset_submit"):
+        st.success("Thank you for your interest! The project team will contact you soon.")
 
-_,but,_ = main.columns([1,2,1])
-if but.button("Calculate Your Carbon Footprint!", type="primary"):
-    click_element('tab-1')
+# --- Certification & Audit Contact ---
+with tab5:
+    st.markdown("""
+## ISO 14064 Certification & Virtual Audit
+If you want your GHG emissions data certified, please contact our auditor for a virtual ISO 14064 audit. We will review your data, provide feedback, and issue certification if requirements are met.
+""")
+    contact_name = st.text_input("Your Name", key="cert_name")
+    contact_email = st.text_input("Your Email", key="cert_email")
+    contact_message = st.text_area("Message (please describe your request or questions)", key="cert_message")
+    if st.button("Contact Auditor", key="cert_submit"):
+        st.success("Thank you! The auditor will contact you soon regarding your certification request.")
 
-tab1, tab2, tab3, tab4, tab5 = comps.tabs(["👴 Personal","🚗 Travel","🗑️ Waste","⚡ Energy","💸 Consumption"])
-tab_result,_ = result.tabs([" "," "])
-
-def component():
-    tab1col1, tab1col2 = tab1.columns(2)
-    height = tab1col1.number_input("Height",0,251, value=None, placeholder="160", help="in cm")
-    weight = tab1col2.number_input("Weight", 0, 250, value=None, placeholder="75", help="in kg")
-    if (weight is None) or (weight == 0) : weight = 1
-    if (height is None) or (height == 0) : height = 1
-    calculation = weight / (height/100)**2
-    body_type = "underweight" if (calculation < 18.5) else \
-                 "normal" if ((calculation >=18.5) and (calculation < 25 )) else \
-                 "overweight" if ((calculation >= 25) and (calculation < 30)) else "obese"
-    sex = tab1.selectbox('Gender', ["female", "male"])
-    diet = tab1.selectbox('Diet', ['omnivore', 'pescatarian', 'vegetarian', 'vegan'], help="""
-                                                                                              Omnivore: Eats both plants and animals.\n
-                                                                                              Pescatarian: Consumes plants and seafood, but no other meat\n
-                                                                                              Vegetarian: Diet excludes meat but includes plant-based foods.\n
-                                                                                              Vegan: Avoids all animal products, including meat, dairy, and eggs.""")
-    social = tab1.selectbox('Social Activity', ['never', 'often', 'sometimes'], help="How often do you go out?")
-
-    transport = tab2.selectbox('Transportation', ['public', 'private', 'walk/bicycle'],
-                               help="Which transportation method do you prefer the most?")
-    if transport == "private":
-        vehicle_type = tab2.selectbox('Vehicle Type', ['petrol', 'diesel', 'hybrid', 'lpg', 'electric'],
-                                      help="What type of fuel do you use in your car?")
-    else:
-        vehicle_type = "None"
-
-    if transport == "walk/bicycle":
-        vehicle_km = 0
-    else:
-        vehicle_km = tab2.slider('What is the monthly distance traveled by the vehicle in kilometers?', 0, 5000, 0, disabled=False)
-
-    air_travel = tab2.selectbox('How often did you fly last month?', ['never', 'rarely', 'frequently', 'very frequently'], help= """
-                                                                                                                             Never: I didn't travel by plane.\n
-                                                                                                                             Rarely: Around 1-4 Hours.\n
-                                                                                                                             Frequently: Around 5 - 10 Hours.\n
-                                                                                                                             Very Frequently: Around 10+ Hours. """)
-
-    waste_bag = tab3.selectbox('What is the size of your waste bag?', ['small', 'medium', 'large', 'extra large'])
-    waste_count = tab3.slider('How many waste bags do you trash out in a week?', 0, 10, 0)
-    recycle = tab3.multiselect('Do you recycle any materials below?', ['Plastic', 'Paper', 'Metal', 'Glass'])
-
-    heating_energy = tab4.selectbox('What power source do you use for heating?', ['natural gas', 'electricity', 'wood', 'coal'])
-
-    for_cooking = tab4.multiselect('What cooking systems do you use?', ['microwave', 'oven', 'grill', 'airfryer', 'stove'])
-    energy_efficiency = tab4.selectbox('Do you consider the energy efficiency of electronic devices?', ['No', 'Yes', 'Sometimes' ])
-    daily_tv_pc = tab4.slider('How many hours a day do you spend in front of your PC/TV?', 0, 24, 0)
-    internet_daily = tab4.slider('What is your daily internet usage in hours?', 0, 24, 0)
-
-    shower = tab5.selectbox('How often do you take a shower?', ['daily', 'twice a day', 'more frequently', 'less frequently'])
-    grocery_bill = tab5.slider('Monthly grocery spending in $', 0, 500, 0)
-    clothes_monthly = tab5.slider('How many clothes do you buy monthly?', 0, 30, 0)
-
-    data = {'Body Type': body_type,
-            "Sex": sex,
-            'Diet': diet,
-            "How Often Shower": shower,
-            "Heating Energy Source": heating_energy,
-            "Transport": transport,
-            "Social Activity": social,
-            'Monthly Grocery Bill': grocery_bill,
-            "Frequency of Traveling by Air": air_travel,
-            "Vehicle Monthly Distance Km": vehicle_km,
-            "Waste Bag Size": waste_bag,
-            "Waste Bag Weekly Count": waste_count,
-            "How Long TV PC Daily Hour": daily_tv_pc,
-            "Vehicle Type": vehicle_type,
-            "How Many New Clothes Monthly": clothes_monthly,
-            "How Long Internet Daily Hour": internet_daily,
-            "Energy efficiency": energy_efficiency
-            }
-    data.update({f"Cooking_with_{x}": y for x, y in
-                 dict(zip(for_cooking, np.ones(len(for_cooking)))).items()})
-    data.update({f"Do You Recyle_{x}": y for x, y in
-                 dict(zip(recycle, np.ones(len(recycle)))).items()})
-
-
-    return pd.DataFrame(data, index=[0])
-
-df = component()
-data = input_preprocessing(df)
-
-sample_df = pd.DataFrame(data=sample,index=[0])
-sample_df[sample_df.columns] = 0
-sample_df[data.columns] = data
-
-ss = pickle.load(open("./models/scale.sav","rb"))
-model = pickle.load(open("./models/model.sav","rb"))
-prediction = round(np.exp(model.predict(ss.transform(sample_df))[0]))
-
-column1,column2 = tab1.columns(2)
-_,resultbutton,_ = tab5.columns([1,1,1])
-if resultbutton.button(" ", type = "secondary"):
-    tab_result.image(chart(model,ss, sample_df,prediction), use_column_width="auto")
-    click_element('tab-2')
-
-pop_button = """<button id = "button-17" class="button-17" role="button"> ❔ Did You Know</button>"""
-_,home,_ = comps.columns([1,2,1])
-_,col2,_ = comps.columns([1,10,1])
-col2.markdown(pop_button, unsafe_allow_html=True)
-pop = """
-<div id="popup" class="DidYouKnow_root">
-<p class="DidYouKnow_title TextNew" style="font-size: 20px;"> ❔ Did you know</p>
-    <p id="popupText" class="DidYouKnow_content TextNew"><span>
-    Each year, human activities release over 40 billion metric tons of carbon dioxide into the atmosphere, contributing to climate change.
-    </span></p>
-</div>
-"""
-col2.markdown(pop, unsafe_allow_html=True)
-
-if home.button("🏡"):
-    click_element('tab-0')
-_,resultmid,_ = result.columns([1,2,1])
-
-tree_count = round(prediction / 411.4)
-tab_result.markdown(f"""You owe nature <b>{tree_count}</b> tree{'s' if tree_count > 1 else ''} monthly. <br> {f"<a href='https://www.tema.org.tr/en/homepage' id = 'button-17' class='button-17' role='button'> 🌳 Proceed to offset 🌳</a>" if tree_count > 0 else ""}""",  unsafe_allow_html=True)
-
-if resultmid.button("  ", type="secondary"):
-    click_element('tab-1')
-
-with open("./style/footer.html", "r", encoding="utf-8") as footer:
-    footer_html = f"""{footer.read()}"""
-    st.markdown(footer_html, unsafe_allow_html=True)
-
-script()
+# --- Save or Submit Button ---
+if st.button("Save/Submit Data"):
+    st.success("Your data has been saved! If you want your emissions data certified, please contact us for a virtual ISO 14064 audit.")
