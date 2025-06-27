@@ -162,6 +162,124 @@ def chart(model, scaler,sample_df, prediction):
     background.save(data3, "PNG")
     return data3
 
+def validate_restaurant_data(data_dict):
+    """
+    Validate restaurant emissions data for reasonable ranges
+    Returns a tuple of (is_valid, warnings, errors)
+    """
+    warnings = []
+    errors = []
+    
+    # Define reasonable ranges for each parameter
+    ranges = {
+        'lpg_used': (0, 2000, 'kg/year'),
+        'generator_fuel': (0, 1000, 'liters/year'),
+        'refrigerant_leak': (0, 50, 'kg/year'),
+        'owned_vehicle_fuel': (0, 2000, 'liters/year'),
+        'electricity': (0, 50000, 'kWh/year'),
+        'chilled_water': (0, 5000, 'kWh/year'),
+        'rice_kg': (0, 10000, 'kg/year'),
+        'lentils_kg': (0, 2000, 'kg/year'),
+        'vegetables_kg': (0, 10000, 'kg/year'),
+        'milk_liters': (0, 5000, 'liters/year'),
+        'ghee_kg': (0, 1000, 'kg/year'),
+        'spices_kg': (0, 500, 'kg/year'),
+        'oil_liters': (0, 2000, 'liters/year'),
+        'upstream_transport_km': (0, 50000, 'km/year'),
+        'food_waste_kg': (0, 2000, 'kg/year'),
+        'packaging_waste_kg': (0, 1000, 'kg/year'),
+        'staff_count': (0, 50, 'people'),
+        'avg_commute_km': (0, 50, 'km'),
+        'business_travel_km': (0, 1000, 'km/year'),
+        'third_party_deliveries': (0, 20000, 'orders/year'),
+        'customer_visits': (0, 100000, 'visits/year'),
+        'takeaway_containers': (0, 50000, 'containers/year')
+    }
+    
+    for param, (min_val, max_val, unit) in ranges.items():
+        if param in data_dict:
+            value = data_dict[param]
+            
+            # Check for negative values
+            if value < 0:
+                errors.append(f"{param}: Cannot be negative ({value} {unit})")
+            
+            # Check for unreasonably high values
+            elif value > max_val:
+                warnings.append(f"{param}: Value seems high ({value} {unit}, typical max: {max_val} {unit})")
+            
+            # Check for missing required fields
+            elif value == 0 and param in ['lpg_used', 'electricity', 'rice_kg', 'vegetables_kg']:
+                warnings.append(f"{param}: Value is 0 - please verify if this is correct")
+    
+    # Check for logical consistency
+    if 'staff_count' in data_dict and 'customer_visits' in data_dict:
+        staff = data_dict['staff_count']
+        customers = data_dict['customer_visits']
+        if staff > 0 and customers > 0:
+            customers_per_staff = customers / staff
+            if customers_per_staff > 10000:  # More than 10k customers per staff member
+                warnings.append(f"High customer-to-staff ratio ({customers_per_staff:.0f} customers per staff)")
+    
+    return len(errors) == 0, warnings, errors
+
+def create_sample_data(restaurant_type="Medium Restaurant"):
+    """
+    Create sample data for different restaurant types
+    """
+    samples = {
+        "Small Dosa Shop": {
+            'lpg_used': 300.0, 'generator_fuel': 50.0, 'electricity': 8000.0,
+            'rice_kg': 1500.0, 'vegetables_kg': 1000.0, 'milk_liters': 800.0,
+            'staff_count': 5, 'customer_visits': 10000
+        },
+        "Medium Restaurant": {
+            'lpg_used': 500.0, 'generator_fuel': 100.0, 'electricity': 12000.0,
+            'rice_kg': 2000.0, 'vegetables_kg': 1500.0, 'milk_liters': 1000.0,
+            'staff_count': 8, 'customer_visits': 15000
+        },
+        "Large Restaurant": {
+            'lpg_used': 800.0, 'generator_fuel': 200.0, 'electricity': 20000.0,
+            'rice_kg': 3000.0, 'vegetables_kg': 2500.0, 'milk_liters': 1500.0,
+            'staff_count': 15, 'customer_visits': 25000
+        },
+        "Food Court Stall": {
+            'lpg_used': 200.0, 'generator_fuel': 30.0, 'electricity': 5000.0,
+            'rice_kg': 800.0, 'vegetables_kg': 600.0, 'milk_liters': 400.0,
+            'staff_count': 3, 'customer_visits': 8000
+        }
+    }
+    
+    base_data = samples.get(restaurant_type, samples["Medium Restaurant"])
+    
+    # Complete the data with estimated values
+    complete_data = {
+        'lpg_used': base_data['lpg_used'],
+        'generator_fuel': base_data['generator_fuel'],
+        'refrigerant_leak': 0.0,
+        'owned_vehicle_fuel': 0.0,
+        'electricity': base_data['electricity'],
+        'chilled_water': 0.0,
+        'rice_kg': base_data['rice_kg'],
+        'lentils_kg': base_data['rice_kg'] * 0.25,
+        'vegetables_kg': base_data['vegetables_kg'],
+        'milk_liters': base_data['milk_liters'],
+        'ghee_kg': base_data['milk_liters'] * 0.2,
+        'spices_kg': base_data['vegetables_kg'] * 0.1,
+        'oil_liters': base_data['vegetables_kg'] * 0.2,
+        'upstream_transport_km': base_data['rice_kg'] * 2,
+        'food_waste_kg': base_data['rice_kg'] * 0.25,
+        'packaging_waste_kg': base_data['customer_visits'] * 0.02,
+        'staff_count': base_data['staff_count'],
+        'avg_commute_km': 5.0,
+        'business_travel_km': 100.0,
+        'third_party_deliveries': base_data['customer_visits'] * 0.3,
+        'customer_visits': base_data['customer_visits'],
+        'takeaway_containers': base_data['customer_visits'] * 0.4
+    }
+    
+    return complete_data
+
 
 
 
